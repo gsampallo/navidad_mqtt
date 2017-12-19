@@ -1,10 +1,12 @@
+#define MusicaNavidad_h
+
 class MusicaNavidad {
   public:
-    MusicaNavidad(int pin);
-    void navidad();
+    MusicaNavidad();
+    void tocarMusica(int musica);
   private:
-    int _pin;
+    int tonePin = D8;
+    void navidad();
     void navidad1();
     void navidad2();
-    void navidad3();
 };
