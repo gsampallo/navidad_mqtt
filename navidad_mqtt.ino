@@ -3,17 +3,23 @@
 
 #include "MusicaNavidad.h"
 
+#include <ESP8266WebServer.h>
+#include <DNSServer.h>
+#include <WiFiManager.h> 
 
-const char* ssid = "linksys";
-const char* password = "perromateo";
-const char* mqtt_server = "144.217.165.119";
+const char* ssid = "wifi";
+const char* password = "clave";
+const char* mqtt_server = "mqtt_server";
 
-const char* keyDevice = "NAVIDAD2";
+const char* keyDevice = "NAVIDAD";
 
 #define pinBoton D5
 #define pinBoton2 D6 //reset
 #define pinLed D2
 #define pinLed2 D1
+
+#define pinLedEstrella D4
+
 #define parlante D8
 int buttonState=0;
 
@@ -33,14 +39,20 @@ void setup() {
   
   pinMode(pinLed, OUTPUT);
   pinMode(pinLed2, OUTPUT);
+
+  pinMode(pinLedEstrella, OUTPUT);
+  
   pinMode(pinBoton, INPUT);
   pinMode(pinBoton2, INPUT); //reset
   pinMode(parlante,OUTPUT);
-  buttonState= LOW;
+  buttonState = LOW;
   
   digitalWrite(pinLed,LOW);
   digitalWrite(pinLed2,LOW);
   
+  digitalWrite(pinLedEstrella,LOW);
+
+ 
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);  
@@ -51,10 +63,13 @@ void setup_wifi() {
 
   delay(10);
   WiFi.begin(ssid, password);
-
+  
+  digitalWrite(pinLedEstrella,LOW);
+  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
+  digitalWrite(pinLedEstrella,HIGH);
 }
 
 
@@ -88,17 +103,21 @@ boolean notificando = false;
 void reconnect() {
 
   while (!client.connected()) {
-
-    if (client.connect(keyDevice,"guillermo","Moscardon01")) {
+    
+    if (client.connect(keyDevice,"usuario","clave")) {
 
       //client.publish("casa", keyDevice);
 
       client.subscribe("SALUDAR");
+      
     } else {
       delay(5000);
     }
   }
 }
+
+long interval = 5000; //5 segundos
+long previousMillis = 0;
 
 void loop() {
   if (!client.connected()) {
@@ -108,6 +127,34 @@ void loop() {
   } 
   
   client.loop();
+
+  unsigned long currentMillis = millis();
+  if ( digitalRead(pinBoton2) == HIGH ) {
+    
+    if(currentMillis - previousMillis > interval) {
+      previousMillis = currentMillis;
+      
+      digitalWrite(pinLedEstrella,LOW);
+      delay(100);
+      digitalWrite(pinLedEstrella,HIGH);
+      delay(100);
+      digitalWrite(pinLedEstrella,LOW);
+      delay(100);      
+      digitalWrite(pinLedEstrella,HIGH);
+     
+      
+      WiFiManager wifiManager;
+      wifiManager.resetSettings();
+      wifiManager.setTimeout(120);
+      if (!wifiManager.startConfigPortal("OnDemandAP")) {
+        Serial.println("failed to connect and hit timeout");
+        delay(3000);
+        //reset and try again, or maybe put it to deep sleep
+        ESP.reset();
+        delay(5000);
+      }
+    }
+  }
 
   if(digitalRead(pinBoton) == HIGH) {
     client.publish("SALUDAR",String(nro).c_str());   
