@@ -9,9 +9,9 @@
 
 const char* ssid = "wifi";
 const char* password = "clave";
-const char* mqtt_server = "mqtt_server";
+const char* mqtt_server = "server";
 
-const char* keyDevice = "NAVIDAD";
+const char* keyDevice = "NAVIDAD4";
 
 #define pinBoton D5
 #define pinBoton2 D6 //reset
@@ -23,7 +23,7 @@ const char* keyDevice = "NAVIDAD";
 #define parlante D8
 int buttonState=0;
 
-int nro = 1;
+int nro = 2;
 
 MusicaNavidad navidad;
 
@@ -77,22 +77,36 @@ void setup_wifi() {
 
 void callback(char* topic, byte* payload, unsigned int length) {
 
-  if (((char)payload[0] == '1')) {
+  if (((char)payload[0] == '1')) {   
+
     digitalWrite(pinLed,HIGH);
     digitalWrite(pinLed2,HIGH);
-    navidad.tocarMusica(1);
+    
+    navidad.tocarMusica(1);    
+
     digitalWrite(pinLed,LOW);
-    digitalWrite(pinLed2,LOW);
+    digitalWrite(pinLed2,LOW); 
+    
   } else if ((char)payload[0] == '2') {
+
     digitalWrite(pinLed,HIGH);
-    navidad.tocarMusica(2);
-    digitalWrite(pinLed,LOW);
-  } else if ((char)payload[0] == '3') {
     digitalWrite(pinLed2,HIGH);
+    
+    navidad.tocarMusica(2);
+
+    digitalWrite(pinLed,LOW);
+    digitalWrite(pinLed2,LOW); 
+    
+  } else if ((char)payload[0] == '3') {
+
+    digitalWrite(pinLed,HIGH);
+    digitalWrite(pinLed2,HIGH);
+    
     navidad.tocarMusica(3);
-    digitalWrite(pinLed2,LOW);
+
+    digitalWrite(pinLed,LOW);
+    digitalWrite(pinLed2,LOW);    
   }
-  
   digitalWrite(pinLed,LOW);
   digitalWrite(pinLed2,LOW);
 
